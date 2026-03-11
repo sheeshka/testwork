@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "payment-service"
+version = "0.1.0"
+description = "Сервис работы с платежами по заказу"
+authors = []
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115"
+uvicorn = { version = "^0.34", extras = ["standard"] }
+sqlalchemy = { version = "^2.0", extras = ["asyncio"] }
+asyncpg = "^0.30"
+alembic = "^1.14"
+pydantic-settings = "^2.7"
+httpx = "^0.28"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
