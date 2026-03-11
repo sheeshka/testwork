@@ -20,6 +20,12 @@ cp backend/.env.example backend/.env
 docker compose up --build
 ```
 
+После запуска примените миграции:
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
 Swagger UI: <http://localhost:8000/docs>
 
 ## Тесты
