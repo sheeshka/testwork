@@ -7,6 +7,10 @@ from app.core.enums import PaymentStatus, PaymentType, TransactionStatus
 from app.utils.unitofwork import UnitOfWork
 
 
+class NotFoundError(ValueError):
+    pass
+
+
 class PaymentService:
     def __init__(self):
         self.bank_client = BankClient()
@@ -14,10 +18,10 @@ class PaymentService:
     async def deposit(self, uow: UnitOfWork, order_id: UUID, payment_type: PaymentType, amount: Decimal):
         order = await uow.orders.get_by_id(order_id)
         if not order:
-            raise ValueError("Заказ не найден")
+            raise NotFoundError("Заказ не найден")
 
-        paid_sum = await self._get_paid_sum(uow, order_id)
-        if paid_sum + amount > order.amount:
+        active_sum = await self._get_active_sum(uow, order_id)
+        if active_sum + amount > order.amount:
             raise ValueError("Сумма платежей превышает сумму заказа")
 
         if payment_type == PaymentType.ACQUIRING:
@@ -50,7 +54,7 @@ class PaymentService:
     async def refund(self, uow: UnitOfWork, payment_id: UUID):
         payment = await uow.payments.get_by_id(payment_id)
         if not payment:
-            raise ValueError("Платёж не найден")
+            raise NotFoundError("Платёж не найден")
 
         if payment.status != TransactionStatus.COMPLETED:
             raise ValueError("Возврат возможен только для завершённых платежей")
@@ -64,7 +68,7 @@ class PaymentService:
     async def sync_payment(self, uow: UnitOfWork, payment_id: UUID):
         payment = await uow.payments.get_by_id(payment_id)
         if not payment:
-            raise ValueError("Платёж не найден")
+            raise NotFoundError("Платёж не найден")
 
         if not payment.bank_payment_id:
             raise ValueError("Платёж не является банковским")
@@ -87,8 +91,15 @@ class PaymentService:
     async def get_payments_by_order(self, uow: UnitOfWork, order_id: UUID):
         order = await uow.orders.get_by_id(order_id)
         if not order:
-            raise ValueError("Заказ не найден")
+            raise NotFoundError("Заказ не найден")
         return await uow.payments.find_by_order(order_id)
+
+    async def _get_active_sum(self, uow: UnitOfWork, order_id: UUID) -> Decimal:
+        payments = await uow.payments.find_by_order(order_id)
+        return sum(
+            p.amount for p in payments
+            if p.status in (TransactionStatus.COMPLETED, TransactionStatus.PENDING)
+        )
 
     async def _get_paid_sum(self, uow: UnitOfWork, order_id: UUID) -> Decimal:
         payments = await uow.payments.find_by_order(order_id)

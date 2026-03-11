@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.payment import PaymentCreate, PaymentRead, PaymentRefund
-from app.services.payment import PaymentService
+from app.services.payment import NotFoundError, PaymentService
 from app.utils.dependencies import UOWDep
 
 router = APIRouter(prefix="/payments", tags=["payments"])
@@ -16,6 +16,8 @@ async def deposit(data: PaymentCreate, uow: UOWDep):
         return await payment_service.deposit(
             uow, data.order_id, data.type, data.amount
         )
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except RuntimeError as e:
@@ -26,6 +28,8 @@ async def deposit(data: PaymentCreate, uow: UOWDep):
 async def refund(data: PaymentRefund, uow: UOWDep):
     try:
         return await payment_service.refund(uow, data.payment_id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -34,6 +38,8 @@ async def refund(data: PaymentRefund, uow: UOWDep):
 async def sync_payment(payment_id: UUID, uow: UOWDep):
     try:
         return await payment_service.sync_payment(uow, payment_id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except RuntimeError as e:
@@ -44,5 +50,5 @@ async def sync_payment(payment_id: UUID, uow: UOWDep):
 async def get_payments_by_order(order_id: UUID, uow: UOWDep):
     try:
         return await payment_service.get_payments_by_order(uow, order_id)
-    except ValueError as e:
+    except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

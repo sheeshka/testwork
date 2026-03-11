@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from app.core.enums import PaymentType, TransactionStatus
 
@@ -12,6 +12,13 @@ class PaymentCreate(BaseModel):
     order_id: UUID
     type: PaymentType
     amount: Decimal
+
+    @field_validator("amount")
+    @classmethod
+    def amount_must_be_positive(cls, v: Decimal) -> Decimal:
+        if v <= 0:
+            raise ValueError("Сумма должна быть больше нуля")
+        return v
 
 
 class PaymentRead(BaseModel):
