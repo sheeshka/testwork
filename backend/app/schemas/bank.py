@@ -1,13 +1,13 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AcquiringStartRequest(BaseModel):
     """Запрос на создание платежа в банке"""
     order_id: str
-    amount: Decimal
+    amount: Decimal = Field(max_digits=12, decimal_places=2)
 
 
 class AcquiringStartResponse(BaseModel):
