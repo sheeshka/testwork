@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -41,7 +41,7 @@ class PaymentService:
                 type=payment_type,
                 status=TransactionStatus.COMPLETED,
                 amount=amount,
-                paid_at=datetime.now(timezone.utc),
+                paid_at=datetime.utcnow(),
             )
 
         await self._recalculate_order_status(uow, order)
