@@ -22,6 +22,14 @@ docker compose up --build
 
 Swagger UI: <http://localhost:8000/docs>
 
+## Тесты
+
+```bash
+docker compose exec backend python -m pytest tests/ -v
+```
+
+22 unit-теста: бизнес-логика сервисов (deposit, refund, sync, пересчёт статуса) и валидация Pydantic-схем. Подробнее — `documents/testing.md`.
+
 ## Структура проекта
 
 ```text
@@ -37,9 +45,10 @@ testwork/
 │   │   ├── api/            — REST-эндпоинты
 │   │   ├── utils/          — UoW, базовый репозиторий, зависимости
 │   │   └── main.py         — точка входа FastAPI
+│   ├── tests/              — unit-тесты
 │   ├── Dockerfile
 │   └── pyproject.toml
-├── documents/              — схема БД (pgModeler)
+├── documents/              — схема БД, архитектура, тесты
 └── docker-compose.yml
 ```
 
@@ -48,5 +57,7 @@ testwork/
 Layered: API → Services → UoW → Repositories → Models
 
 ## Схема БД
+
+ER-диаграмма и описание таблиц — [documents/database.md](documents/database.md)
 
 ![Схема БД](documents/payment-service.png)
