@@ -17,6 +17,8 @@ services:
       - ./backend/.env
     environment:
       POSTGRES_HOST: postgres
+    volumes:
+      - ./backend:/app
     depends_on:
       - postgres
 
